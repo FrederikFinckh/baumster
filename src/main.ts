@@ -3,6 +3,7 @@ import { redirectToAuthCodeFlow, isAuthenticated, logout } from './auth';
 
 // Check if already authenticated and update UI
 const loginBtn = document.getElementById('loginBtn') as HTMLButtonElement;
+const playlistsBtn = document.getElementById('playlistsBtn') as HTMLButtonElement;
 const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement;
 
 if (isAuthenticated()) {
@@ -11,6 +12,14 @@ if (isAuthenticated()) {
     loginBtn.textContent = 'Go to Scanner';
     loginBtn.addEventListener('click', () => {
       window.location.href = '/scanner.html';
+    });
+  }
+  
+  // Show playlists button
+  if (playlistsBtn) {
+    playlistsBtn.style.display = 'block';
+    playlistsBtn.addEventListener('click', () => {
+      window.location.href = '/playlists.html';
     });
   }
   
@@ -28,6 +37,11 @@ if (isAuthenticated()) {
     loginBtn.addEventListener('click', () => {
       redirectToAuthCodeFlow();
     });
+  }
+  
+  // Hide playlists button
+  if (playlistsBtn) {
+    playlistsBtn.style.display = 'none';
   }
   
   // Hide logout button

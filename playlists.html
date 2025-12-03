@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Baumster - Playlists</title>
+</head>
+
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>🎵 Baumster</h1>
+            <h2>Playlist Viewer</h2>
+
+            <div class="playlist-input-section">
+                <label for="playlistUrl">Enter Spotify Playlist URL or ID:</label>
+                <input type="text" id="playlistUrl" placeholder="https://open.spotify.com/playlist/... or playlist ID"
+                    class="playlist-input" />
+                <button id="loadPlaylistBtn" class="btn-primary">Load Playlist</button>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+            <div id="playlistResults" style="display: none;">
+                <h3 id="playlistName"></h3>
+                <div class="table-container">
+                    <table id="tracksTable">
+                        <thead>
+                            <tr>
+                                <th>Number</th>
+                                <th>Artist</th>
+                                <th>Song Name</th>
+                                <th>Release Year</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tracksTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button id="backBtn" class="btn-secondary">Back to Home</button>
+                <button id="logoutBtn" class="btn-secondary">Logout</button>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="/src/playlists.ts"></script>
+</body>
+
+</html>

@@ -11,6 +11,7 @@ export default defineConfig({
                 main: './index.html',
                 login: './login.html',
                 scanner: './scanner.html',
+                playlists: './playlists.html',
             },
         },
     },

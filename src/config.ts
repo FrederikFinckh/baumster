@@ -6,6 +6,8 @@ export const SPOTIFY_CONFIG = {
         'user-read-email',
         'streaming',
         'user-read-playback-state',
-        'user-modify-playback-state'
+        'user-modify-playback-state',
+        'playlist-read-private',
+        'playlist-read-collaborative'
     ]
 };
