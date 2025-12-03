@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baumster - QR Music Player</title>
+</head>
+
+<body>
+  <div id="app">
+    <div class="container">
+      <h1>🎵 Baumster</h1>
+      <p class="tagline">Scan QR codes to play Spotify songs</p>
+
+      <div class="info-card">
+        <h2>How it works</h2>
+        <ol>
+          <li>Connect your Spotify account</li>
+          <li>Scan a QR code containing a Spotify track link</li>
+          <li>The song starts playing automatically on your device</li>
+        </ol>
+      </div>
+
+      <div class="auth-section">
+        <button id="loginBtn" class="btn-primary">Connect with Spotify</button>
+        <button id="logoutBtn" class="btn-secondary" style="display: none;">Logout</button>
+      </div>
+
+      <div class="requirements">
+        <p><strong>Requirements:</strong></p>
+        <ul>
+          <li>Spotify Premium account</li>
+          <li>Active Spotify app on your device</li>
+          <li>Camera access for QR scanning</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
