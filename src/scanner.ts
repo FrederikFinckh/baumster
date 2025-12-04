@@ -715,8 +715,6 @@ function setupViewToggle() {
 function setupPlayerControls() {
     const playPauseBtn = document.getElementById('playPauseBtn');
     const qrPlayPauseBtn = document.getElementById('qrPlayPauseBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
     const closePlayer = document.getElementById('closePlayer');
 
     if (playPauseBtn) {
@@ -733,24 +731,6 @@ function setupPlayerControls() {
             e.stopPropagation();
             if (spotifyPlayer) {
                 spotifyPlayer.togglePlay();
-            }
-        });
-    }
-
-    if (prevBtn) {
-        prevBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (spotifyPlayer) {
-                spotifyPlayer.previousTrack();
-            }
-        });
-    }
-
-    if (nextBtn) {
-        nextBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (spotifyPlayer) {
-                spotifyPlayer.nextTrack();
             }
         });
     }
