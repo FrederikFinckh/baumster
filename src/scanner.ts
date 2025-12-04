@@ -655,7 +655,7 @@ function updatePlayPauseButton() {
 // Setup view toggle
 function setupViewToggle() {
     const qrView = document.getElementById('qrView');
-    const trackInfoView = document.getElementById('trackInfoView');
+    const showQrBtn = document.getElementById('showQrBtn');
 
     if (qrView) {
         qrView.addEventListener('click', () => {
@@ -663,8 +663,9 @@ function setupViewToggle() {
         });
     }
 
-    if (trackInfoView) {
-        trackInfoView.addEventListener('click', () => {
+    if (showQrBtn) {
+        showQrBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             showQrView();
         });
     }

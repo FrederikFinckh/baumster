@@ -626,6 +626,86 @@ h1 {
   color: var(--spotify-light-gray);
 }
 
+/* QR Code View Styles */
+.qr-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.qr-view:hover {
+  transform: scale(1.02);
+}
+
+.qr-code-image {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: white;
+  padding: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.qr-hint {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--spotify-light-gray);
+  text-align: center;
+}
+
+/* QR View Play/Pause Button */
+.qr-play-btn {
+  margin-top: 0;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.qr-play-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Track Info View Styles */
+.track-info-view {
+  transition: all 0.2s ease;
+}
+
+.info-hint {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--spotify-light-gray);
+  text-align: center;
+}
+
+/* Show QR Button */
+.show-qr-btn {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: var(--spotify-white);
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 500px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.show-qr-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--spotify-green);
+  transform: scale(1.05);
+}
+
+.show-qr-btn:active {
+  transform: scale(0.98);
+}
+
 /* Responsive player styles */
 @media (max-width: 768px) {
   .player-box {
@@ -660,73 +740,12 @@ h1 {
     height: 52px;
   }
 
-  /* QR Code View Styles */
-  .qr-view {
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-  }
-
-  .qr-view:hover {
-    transform: scale(1.02);
-  }
-
-  .qr-code-image {
-    max-width: 300px;
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    background: white;
-    padding: 10px;
-    margin-bottom: 1.5rem;
-  }
-
-  .qr-hint {
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-    color: var(--spotify-light-gray);
-    text-align: center;
-  }
-
-  /* QR View Play/Pause Button */
-  .qr-play-btn {
-    margin-top: 0;
-    cursor: pointer;
-    z-index: 10;
-  }
-
-  .qr-play-btn:hover {
-    transform: scale(1.1);
-  }
-
-  /* Track Info View Styles */
-  .track-info-view {
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .track-info-view:hover {
-    transform: scale(1.01);
-  }
-
-  .info-hint {
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    color: var(--spotify-light-gray);
-    text-align: center;
-  }
-
   /* Responsive QR View */
-  @media (max-width: 768px) {
-    .qr-code-image {
-      max-width: 250px;
-    }
+  .qr-code-image {
+    max-width: 250px;
+  }
 
-    .qr-view {
-      padding: 1.5rem;
-    }
+  .qr-view {
+    padding: 1.5rem;
   }
 }
