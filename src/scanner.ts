@@ -1,6 +1,7 @@
 import './style.css';
 import { isAuthenticated, getStoredToken, logout } from './auth';
 import { Html5Qrcode } from 'html5-qrcode';
+import QRCode from 'qrcode';
 
 // Check if authenticated
 if (!isAuthenticated()) {
@@ -13,6 +14,8 @@ let spotifyPlayer: Spotify.Player | null = null;
 let deviceId: string | null = null;
 let currentTrackUri: string | null = null;
 let isPlaying = false;
+let isShowingQrCode = true;
+let currentTrackUrl: string | null = null;
 let deviceReady = false;
 
 // Spotify URL patterns
@@ -382,8 +385,8 @@ async function playTrack(trackUri: string) {
 
         console.log('✅ Playback started successfully');
 
-        // Show player box
-        showPlayerBox();
+        // Show player box with QR code
+        await showPlayerBox();
 
         // Resume scanner after a delay
         setTimeout(() => {
@@ -435,12 +438,63 @@ async function playPlaylist(playlistId: string) {
     }
 }
 
+// Generate QR code from track URI
+async function generateTrackQrCode(trackUri: string): Promise<string> {
+    // Convert URI to URL format
+    const trackId = trackUri.replace('spotify:track:', '');
+    const url = `https://open.spotify.com/track/${trackId}`;
+    currentTrackUrl = url;
+
+    // Generate QR code
+    return await QRCode.toDataURL(url, {
+        errorCorrectionLevel: 'H',
+        width: 400,
+        margin: 2
+    });
+}
+
+// Show QR view
+function showQrView() {
+    const qrView = document.getElementById('qrView');
+    const trackInfoView = document.getElementById('trackInfoView');
+
+    if (qrView) qrView.style.display = 'flex';
+    if (trackInfoView) trackInfoView.style.display = 'none';
+    isShowingQrCode = true;
+}
+
+// Show track info view
+function showTrackInfoView() {
+    const qrView = document.getElementById('qrView');
+    const trackInfoView = document.getElementById('trackInfoView');
+
+    if (qrView) qrView.style.display = 'none';
+    if (trackInfoView) trackInfoView.style.display = 'block';
+    isShowingQrCode = false;
+}
+
 // Show player box
-function showPlayerBox() {
+async function showPlayerBox() {
     const playerBox = document.getElementById('playerBox');
     if (playerBox) {
         playerBox.style.display = 'block';
     }
+
+    // Generate and display QR code
+    if (currentTrackUri) {
+        try {
+            const qrDataUrl = await generateTrackQrCode(currentTrackUri);
+            const qrImage = document.getElementById('trackQrCode') as HTMLImageElement;
+            if (qrImage) {
+                qrImage.src = qrDataUrl;
+            }
+        } catch (error) {
+            console.error('Error generating QR code:', error);
+        }
+    }
+
+    // Ensure QR view is shown and track info is hidden
+    showQrView();
 }
 
 // Hide player box
@@ -592,6 +646,24 @@ function updatePlayPauseButton() {
     }
 }
 
+// Setup view toggle
+function setupViewToggle() {
+    const qrView = document.getElementById('qrView');
+    const trackInfoView = document.getElementById('trackInfoView');
+
+    if (qrView) {
+        qrView.addEventListener('click', () => {
+            showTrackInfoView();
+        });
+    }
+
+    if (trackInfoView) {
+        trackInfoView.addEventListener('click', () => {
+            showQrView();
+        });
+    }
+}
+
 // Player controls
 function setupPlayerControls() {
     const playPauseBtn = document.getElementById('playPauseBtn');
@@ -600,7 +672,8 @@ function setupPlayerControls() {
     const closePlayer = document.getElementById('closePlayer');
 
     if (playPauseBtn) {
-        playPauseBtn.addEventListener('click', () => {
+        playPauseBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             if (spotifyPlayer) {
                 spotifyPlayer.togglePlay();
             }
@@ -608,7 +681,8 @@ function setupPlayerControls() {
     }
 
     if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             if (spotifyPlayer) {
                 spotifyPlayer.previousTrack();
             }
@@ -616,7 +690,8 @@ function setupPlayerControls() {
     }
 
     if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             if (spotifyPlayer) {
                 spotifyPlayer.nextTrack();
             }
@@ -675,6 +750,7 @@ async function init() {
     updateDeviceStatus('initializing', 'Initializing...');
     await initializeScanner();
     setupPlayerControls();
+    setupViewToggle();
     setupLogout();
     setupRetryDevice();
 

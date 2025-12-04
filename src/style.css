@@ -659,4 +659,64 @@ h1 {
     width: 52px;
     height: 52px;
   }
+
+  /* QR Code View Styles */
+  .qr-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  .qr-view:hover {
+    transform: scale(1.02);
+  }
+
+  .qr-code-image {
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: white;
+    padding: 10px;
+  }
+
+  .qr-hint {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--spotify-light-gray);
+    text-align: center;
+  }
+
+  /* Track Info View Styles */
+  .track-info-view {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .track-info-view:hover {
+    transform: scale(1.01);
+  }
+
+  .info-hint {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--spotify-light-gray);
+    text-align: center;
+  }
+
+  /* Responsive QR View */
+  @media (max-width: 768px) {
+    .qr-code-image {
+      max-width: 250px;
+    }
+
+    .qr-view {
+      padding: 1.5rem;
+    }
+  }
 }
