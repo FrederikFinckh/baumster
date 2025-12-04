@@ -6,6 +6,82 @@
   --spotify-light-gray: #B3B3B3;
 }
 
+/* Device Status Indicator */
+.device-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.9rem;
+}
+
+.device-status .status-label {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.retry-device-btn {
+  margin-left: auto;
+  padding: 0.4rem 0.8rem;
+  background: rgba(29, 185, 84, 0.8);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-device-btn:hover {
+  background: rgba(29, 185, 84, 1);
+  transform: scale(1.05);
+}
+
+.retry-device-btn:active {
+  transform: scale(0.98);
+}
+
+.device-status.status-initializing #deviceStatusText {
+  color: #ffa500;
+}
+
+.device-status.status-connecting #deviceStatusText {
+  color: #4a9eff;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.device-status.status-ready #deviceStatusText {
+  color: #1db954;
+  font-weight: 600;
+}
+
+.device-status.status-active #deviceStatusText {
+  color: #1ed760;
+  font-weight: 600;
+}
+
+.device-status.status-error #deviceStatusText {
+  color: #f44336;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+
 * {
   margin: 0;
   padding: 0;

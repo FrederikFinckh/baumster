@@ -13,6 +13,7 @@ let spotifyPlayer: Spotify.Player | null = null;
 let deviceId: string | null = null;
 let currentTrackUri: string | null = null;
 let isPlaying = false;
+let deviceReady = false;
 
 // Spotify URL patterns
 const SPOTIFY_URL_PATTERNS = {
@@ -100,6 +101,206 @@ function onScanError(errorMessage: string) {
     }
 }
 
+// Get available Spotify devices
+async function getAvailableDevices() {
+    const token = getStoredToken();
+    if (!token) {
+        console.error('No token available');
+        return null;
+    }
+
+    try {
+        const response = await fetch('https://api.spotify.com/v1/me/player/devices', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            console.error('Failed to fetch devices:', response.status);
+            return null;
+        }
+
+        const data = await response.json();
+        console.log('📱 Available Spotify devices:', data.devices.length, 'device(s)');
+
+        // Log ALL device IDs for comparison
+        console.log('🔍 Current deviceId we\'re looking for:', deviceId);
+        data.devices.forEach((d: any, index: number) => {
+            console.log(`Device ${index + 1}:`, {
+                id: d.id,
+                name: d.name,
+                type: d.type,
+                is_active: d.is_active,
+                volume_percent: d.volume_percent,
+                matches: d.id === deviceId ? '✅ MATCH' : '❌ no match'
+            });
+        });
+
+        // Check if our device is in the list
+        const ourDevice = data.devices.find((d: any) => d.id === deviceId);
+        if (ourDevice) {
+            console.log('✅ Our device found and matched!');
+            console.log('  - Name:', ourDevice.name);
+            console.log('  - Type:', ourDevice.type);
+            console.log('  - Active:', ourDevice.is_active);
+            console.log('  - Volume:', ourDevice.volume_percent);
+        } else {
+            console.warn('⚠️ Our device NOT found in available devices list!');
+            console.log('Looking for device ID:', deviceId);
+            console.log('💡 This might indicate a device ID mismatch issue');
+        }
+
+        return data.devices;
+    } catch (error) {
+        console.error('Error fetching devices:', error);
+        return null;
+    }
+}
+
+// Activate/transfer playback to our device
+async function activateDevice(deviceIdToActivate: string) {
+    const token = getStoredToken();
+    if (!token) {
+        console.error('No token available for device activation');
+        return false;
+    }
+
+    console.log('🔄 Activating device:', deviceIdToActivate);
+
+    try {
+        const response = await fetch('https://api.spotify.com/v1/me/player', {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                device_ids: [deviceIdToActivate],
+                play: false // Don't start playing yet
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Device activation failed:', response.status, errorText);
+            return false;
+        }
+
+        console.log('✅ Device activated successfully');
+
+        // Wait a moment for activation to register
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        return true;
+    } catch (error) {
+        console.error('Error activating device:', error);
+        return false;
+    }
+}
+
+// Update device status UI
+function updateDeviceStatus(status: 'initializing' | 'connecting' | 'ready' | 'active' | 'error', message: string, showRetry = false) {
+    const statusEl = document.getElementById('deviceStatus');
+    const statusTextEl = document.getElementById('deviceStatusText');
+    const retryBtn = document.getElementById('retryDeviceBtn');
+
+    if (statusEl && statusTextEl) {
+        statusEl.className = `device-status status-${status}`;
+        statusTextEl.textContent = message;
+        console.log(`📱 Device Status: ${status} - ${message}`);
+    }
+
+    if (retryBtn) {
+        retryBtn.style.display = showRetry ? 'block' : 'none';
+    }
+}
+
+// Verify device is ready for playback with retries
+async function verifyDeviceReady(retryCount = 0): Promise<boolean> {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 2000; // 2 seconds
+
+    if (!deviceId) {
+        console.error('❌ No device ID available');
+        updateDeviceStatus('error', 'No device ID');
+        return false;
+    }
+
+    console.log(`🔍 Verifying device readiness... (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
+    updateDeviceStatus('connecting', `Verifying device... (${retryCount + 1}/${MAX_RETRIES + 1})`);
+
+    // Get available devices
+    const devices = await getAvailableDevices();
+    if (!devices) {
+        console.error('❌ Could not fetch devices');
+        if (retryCount < MAX_RETRIES) {
+            console.log(`⏳ Retrying in ${RETRY_DELAY / 1000} seconds...`);
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+            return verifyDeviceReady(retryCount + 1);
+        }
+        updateDeviceStatus('error', 'Could not fetch devices');
+        return false;
+    }
+
+    // Check if our device is in the list
+    let ourDevice = devices.find((d: any) => d.id === deviceId);
+
+    // If exact match not found, but we have Baumster devices, use any of them
+    if (!ourDevice) {
+        console.warn('⚠️ Exact device ID match not found');
+        const baumsterDevices = devices.filter((d: any) =>
+            d.name && d.name.includes('Baumster')
+        );
+
+        if (baumsterDevices.length > 0) {
+            console.log(`💡 Found ${baumsterDevices.length} Baumster device(s), using the first active or any`);
+            // Prefer active device
+            ourDevice = baumsterDevices.find((d: any) => d.is_active) || baumsterDevices[0];
+            const oldDeviceId = deviceId;
+            deviceId = ourDevice.id; // Update our deviceId to match
+            console.log(`✅ Switched from device ${oldDeviceId} to ${deviceId}`);
+            console.log('New device:', {
+                name: ourDevice.name,
+                id: ourDevice.id,
+                is_active: ourDevice.is_active
+            });
+        } else {
+            console.error('❌ No Baumster devices found at all');
+
+            if (retryCount < MAX_RETRIES) {
+                console.log(`⏳ Waiting ${RETRY_DELAY / 1000} seconds and retrying...`);
+                updateDeviceStatus('connecting', `Waiting for registration... (${retryCount + 1}/${MAX_RETRIES + 1})`);
+                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+                return verifyDeviceReady(retryCount + 1);
+            }
+
+            updateDeviceStatus('error', 'Device not registered', true);
+            return false;
+        }
+    }
+
+    // If device is not active, activate it
+    if (!ourDevice.is_active) {
+        console.log('📱 Device exists but not active, activating...');
+        updateDeviceStatus('connecting', 'Activating device...');
+        if (!deviceId) {
+            console.error('❌ Device ID became null');
+            updateDeviceStatus('error', 'Device ID lost');
+            return false;
+        }
+        const activated = await activateDevice(deviceId);
+        if (!activated) {
+            console.error('❌ Failed to activate device');
+            updateDeviceStatus('error', 'Activation failed');
+            return false;
+        }
+    }
+
+    console.log('✅ Device is ready for playback');
+    updateDeviceStatus('ready', 'Ready ✓');
+    deviceReady = true;
+    return true;
+}
+
 // Handle Spotify URL detection
 async function handleSpotifyUrl(spotifyData: { type: string; id: string }) {
     const { type, id } = spotifyData;
@@ -126,8 +327,22 @@ async function handleSpotifyUrl(spotifyData: { type: string; id: string }) {
 async function playTrack(trackUri: string) {
     const token = getStoredToken();
     if (!token || !deviceId) {
-        console.error('No token or device ID available');
+        console.error('❌ No token or device ID available');
+        alert('Playback error: No authentication token or device ID');
         return;
+    }
+
+    console.log('🎵 Attempting to play track:', trackUri);
+    console.log('Using device ID:', deviceId);
+
+    // Verify device is ready before attempting playback
+    if (!deviceReady) {
+        console.log('⏳ Device not verified yet, verifying now...');
+        const ready = await verifyDeviceReady();
+        if (!ready) {
+            alert('Device not ready. Please wait a moment and try again.');
+            return;
+        }
     }
 
     currentTrackUri = trackUri;
@@ -143,8 +358,29 @@ async function playTrack(trackUri: string) {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to play track');
+            // Enhanced error logging
+            const errorData = await response.json().catch(() => null);
+            console.error('❌ Playback failed:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorData
+            });
+
+            let errorMessage = 'Failed to play track';
+            if (errorData?.error?.message) {
+                errorMessage += ': ' + errorData.error.message;
+            }
+            if (response.status === 404) {
+                errorMessage = 'Device not found. The device may have disconnected.';
+                deviceReady = false; // Reset device ready flag
+            } else if (response.status === 403) {
+                errorMessage = 'Playback forbidden. Check if you have Spotify Premium.';
+            }
+
+            throw new Error(errorMessage);
         }
+
+        console.log('✅ Playback started successfully');
 
         // Show player box
         showPlayerBox();
@@ -157,7 +393,7 @@ async function playTrack(trackUri: string) {
         }, 2000);
     } catch (error) {
         console.error('Error playing track:', error);
-        alert('Failed to play track. Make sure Spotify is active on this device.');
+        alert(`Failed to play track. ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 
@@ -263,13 +499,18 @@ function initializeSpotifyPlayer() {
     const token = getStoredToken();
     if (!token) {
         console.error('No access token available');
+        updateDeviceStatus('error', 'No access token');
         return;
     }
 
     if (!window.Spotify) {
         console.error('Spotify SDK not loaded');
+        updateDeviceStatus('error', 'SDK not loaded');
         return;
     }
+
+    console.log('🎵 Initializing Spotify Web Playback SDK...');
+    updateDeviceStatus('connecting', 'Connecting to Spotify...');
 
     spotifyPlayer = new window.Spotify.Player({
         name: 'Baumster Web Player',
@@ -278,14 +519,21 @@ function initializeSpotifyPlayer() {
     });
 
     // Ready
-    spotifyPlayer.addListener('ready', ({ device_id }) => {
-        console.log('Ready with Device ID', device_id);
+    spotifyPlayer.addListener('ready', async ({ device_id }) => {
+        console.log('🎉 Spotify Player Ready with Device ID:', device_id);
         deviceId = device_id;
+        updateDeviceStatus('connecting', 'Device created, verifying...');
+
+        // Verify device is registered and ready
+        console.log('🔍 Verifying device registration...');
+        await verifyDeviceReady();
     });
 
     // Not Ready
     spotifyPlayer.addListener('not_ready', ({ device_id }) => {
         console.log('Device ID has gone offline', device_id);
+        updateDeviceStatus('error', 'Device offline');
+        deviceReady = false;
     });
 
     // Player state changed
@@ -303,10 +551,12 @@ function initializeSpotifyPlayer() {
     // Errors
     spotifyPlayer.addListener('initialization_error', ({ message }) => {
         console.error('Initialization Error:', message);
+        updateDeviceStatus('error', 'Init error');
     });
 
     spotifyPlayer.addListener('authentication_error', ({ message }) => {
         console.error('Authentication Error:', message);
+        updateDeviceStatus('error', 'Auth error');
         alert('Authentication error. Please log in again.');
         logout();
         window.location.href = '/';
@@ -314,6 +564,7 @@ function initializeSpotifyPlayer() {
 
     spotifyPlayer.addListener('account_error', ({ message }) => {
         console.error('Account Error:', message);
+        updateDeviceStatus('error', 'Account error');
         alert('Account error: ' + message);
     });
 
@@ -322,7 +573,15 @@ function initializeSpotifyPlayer() {
     });
 
     // Connect to the player
-    spotifyPlayer.connect();
+    console.log('🔌 Connecting to Spotify Player...');
+    spotifyPlayer.connect().then(success => {
+        if (success) {
+            console.log('✅ Connected to Spotify Player successfully');
+        } else {
+            console.error('❌ Failed to connect to Spotify Player');
+            updateDeviceStatus('error', 'Connection failed');
+        }
+    });
 }
 
 // Update play/pause button
@@ -393,6 +652,18 @@ function setupLogout() {
     }
 }
 
+// Setup retry device button
+function setupRetryDevice() {
+    const retryBtn = document.getElementById('retryDeviceBtn');
+    if (retryBtn) {
+        retryBtn.addEventListener('click', async () => {
+            console.log('🔄 Manual device verification retry requested');
+            deviceReady = false;
+            await verifyDeviceReady();
+        });
+    }
+}
+
 // Wait for Spotify SDK to load
 window.onSpotifyWebPlaybackSDKReady = () => {
     console.log('Spotify SDK Ready');
@@ -401,13 +672,17 @@ window.onSpotifyWebPlaybackSDKReady = () => {
 
 // Initialize everything
 async function init() {
+    updateDeviceStatus('initializing', 'Initializing...');
     await initializeScanner();
     setupPlayerControls();
     setupLogout();
+    setupRetryDevice();
 
     // If SDK is already loaded, initialize player
     if (window.Spotify) {
         initializeSpotifyPlayer();
+    } else {
+        updateDeviceStatus('connecting', 'Loading Spotify SDK...');
     }
 }
 
