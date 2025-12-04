@@ -1,5 +1,6 @@
 import './style.css';
 import { isAuthenticated, getStoredToken, logout } from './auth';
+import { PDFGenerator, convertToCardData } from './pdf-generator';
 
 if (!isAuthenticated()) {
     window.location.href = '/';
@@ -11,6 +12,7 @@ interface TrackData {
     artist: string;
     songName: string;
     releaseYear: string;
+    url: string;
 }
 
 // Global variable to store editable playlist data
@@ -30,36 +32,37 @@ const tracksTableBody = document.getElementById('tracksTableBody') as HTMLTableS
 const backBtn = document.getElementById('backBtn') as HTMLButtonElement;
 const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement;
 const tracksTable = document.getElementById('tracksTable') as HTMLTableElement;
+const createPdfBtn = document.getElementById('createPdfBtn') as HTMLButtonElement;
 
 // Make table columns resizable
 function makeColumnsResizable() {
     const table = tracksTable;
     const cols = table.querySelectorAll('th');
-    
+
     cols.forEach((col) => {
         const resizer = document.createElement('div');
         resizer.className = 'column-resizer';
         col.appendChild(resizer);
-        
+
         let startX: number;
         let startWidth: number;
-        
+
         resizer.addEventListener('mousedown', (e: MouseEvent) => {
             e.preventDefault();
             startX = e.pageX;
             startWidth = col.offsetWidth;
-            
+
             const mouseMoveHandler = (e: MouseEvent) => {
                 const width = startWidth + (e.pageX - startX);
                 col.style.width = `${width}px`;
                 col.style.minWidth = `${width}px`;
             };
-            
+
             const mouseUpHandler = () => {
                 document.removeEventListener('mousemove', mouseMoveHandler);
                 document.removeEventListener('mouseup', mouseUpHandler);
             };
-            
+
             document.addEventListener('mousemove', mouseMoveHandler);
             document.addEventListener('mouseup', mouseUpHandler);
         });
@@ -93,7 +96,7 @@ function extractPlaylistId(input: string): string | null {
 
 async function fetchPlaylistData(playlistId: string, accessToken: string): Promise<any> {
     const response = await fetch(
-        `https://api.spotify.com/v1/playlists/${playlistId}?fields=name,tracks.items(track(name,artists(name),album(name,release_date)))`,
+        `https://api.spotify.com/v1/playlists/${playlistId}?fields=name,tracks.items(track(id,name,artists(name),album(name,release_date)))`,
         {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
@@ -147,13 +150,15 @@ function displayPlaylistData(data: any): void {
         const artists = track.artists?.map((artist: any) => artist.name).join(', ') || 'Unknown Artist';
         const songName = track.name || 'Unknown Track';
         const releaseYear = extractReleaseYear(track.album?.release_date);
+        const trackUrl = `https://open.spotify.com/track/${track.id}`;
 
         // Add to playlistData array
         playlistData.push({
             number,
             artist: artists,
             songName,
-            releaseYear
+            releaseYear,
+            url: trackUrl
         });
 
         // Create editable input fields for each cell
@@ -181,17 +186,17 @@ function displayPlaylistData(data: any): void {
         artistInput.className = 'editable-cell';
         artistInput.dataset.index = index.toString();
         artistInput.dataset.field = 'artist';
-        
+
         // Highlight if multiple artists
         if (hasMultipleArtists(artists)) {
             artistInput.classList.add('multi-artist');
         }
-        
+
         artistInput.addEventListener('input', (e) => {
             const target = e.target as HTMLInputElement;
             const idx = parseInt(target.dataset.index || '0');
             playlistData[idx].artist = target.value;
-            
+
             // Update highlight based on whether there are multiple artists
             if (hasMultipleArtists(target.value)) {
                 target.classList.add('multi-artist');
@@ -234,7 +239,7 @@ function displayPlaylistData(data: any): void {
 
     playlistResults.style.display = 'block';
     errorMessage.style.display = 'none';
-    
+
     // Make columns resizable after table is rendered
     makeColumnsResizable();
 }
@@ -299,4 +304,23 @@ backBtn.addEventListener('click', () => {
 logoutBtn.addEventListener('click', () => {
     logout();
     window.location.href = '/';
+});
+
+createPdfBtn.addEventListener('click', async () => {
+    try {
+        createPdfBtn.disabled = true;
+        createPdfBtn.textContent = 'Generating PDF...';
+
+        const cardData = convertToCardData(playlistData);
+        const generator = new PDFGenerator();
+        await generator.generatePDF(cardData);
+
+        createPdfBtn.textContent = 'Create PDF';
+    } catch (error) {
+        console.error('PDF generation failed:', error);
+        alert('Failed to generate PDF. Please try again.');
+    } finally {
+        createPdfBtn.disabled = false;
+        createPdfBtn.textContent = 'Create PDF';
+    }
 });

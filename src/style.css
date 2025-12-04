@@ -330,3 +330,14 @@ h1 {
 .column-resizer:active {
   background: rgba(255, 255, 255, 0.5);
 }
+
+/* PDF action section */
+.pdf-action-section {
+  margin: 1.5rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.pdf-action-section .btn-primary {
+  min-width: 200px;
+}
