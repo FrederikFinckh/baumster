@@ -460,6 +460,15 @@ h1 {
   text-align: center;
 }
 
+/* Start Scanner Section */
+.start-scanner-section {
+  margin: 2rem 0;
+  text-align: center;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+}
+
 /* Player box styles */
 .player-box {
   margin: 2rem 0;
@@ -635,10 +644,6 @@ h1 {
   padding: 2rem;
   cursor: pointer;
   transition: transform 0.2s ease;
-}
-
-.qr-view:hover {
-  transform: scale(1.02);
 }
 
 .qr-code-image {

@@ -21,11 +21,16 @@
             </div>
 
             <!-- Camera Preview Section -->
-            <div class="scanner-section">
+            <div id="scannerSection" class="scanner-section">
                 <div id="reader" class="qr-reader"></div>
                 <div id="scannerStatus" class="scanner-status">
                     Initializing camera...
                 </div>
+            </div>
+
+            <!-- Start Scanner Button (hidden by default) -->
+            <div id="startScannerSection" class="start-scanner-section" style="display: none;">
+                <button id="startScannerBtn" class="btn-primary">Start Scanner</button>
             </div>
 
             <!-- Player Section (hidden by default) -->

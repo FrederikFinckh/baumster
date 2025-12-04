@@ -72,6 +72,50 @@ async function initializeScanner() {
     }
 }
 
+// Hide scanner and show start scanner button
+function hideScannerShowButton() {
+    const scannerSection = document.getElementById('scannerSection');
+    const startScannerSection = document.getElementById('startScannerSection');
+
+    if (scannerSection) {
+        scannerSection.style.display = 'none';
+    }
+    if (startScannerSection) {
+        startScannerSection.style.display = 'block';
+    }
+}
+
+// Show scanner and hide start scanner button
+function showScannerHideButton() {
+    const scannerSection = document.getElementById('scannerSection');
+    const startScannerSection = document.getElementById('startScannerSection');
+
+    if (scannerSection) {
+        scannerSection.style.display = 'block';
+    }
+    if (startScannerSection) {
+        startScannerSection.style.display = 'none';
+    }
+}
+
+// Restart scanner
+async function restartScanner() {
+    console.log('🔄 Restarting scanner...');
+
+    // Show scanner section
+    showScannerHideButton();
+
+    // If scanner is already running, resume it
+    if (html5QrCode?.isScanning) {
+        console.log('Scanner already running, resuming...');
+        html5QrCode.resume();
+    } else {
+        // Otherwise, reinitialize
+        console.log('Reinitializing scanner...');
+        await initializeScanner();
+    }
+}
+
 // Handle successful QR code scan
 function onScanSuccess(decodedText: string) {
     console.log('QR Code detected:', decodedText);
@@ -388,12 +432,8 @@ async function playTrack(trackUri: string) {
         // Show player box with QR code
         await showPlayerBox();
 
-        // Resume scanner after a delay
-        setTimeout(() => {
-            if (html5QrCode?.isScanning) {
-                html5QrCode.resume();
-            }
-        }, 2000);
+        // Hide scanner and show "Start Scanner" button
+        hideScannerShowButton();
     } catch (error) {
         console.error('Error playing track:', error);
         alert(`Failed to play track. ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -756,6 +796,16 @@ function setupRetryDevice() {
     }
 }
 
+// Setup start scanner button
+function setupStartScanner() {
+    const startScannerBtn = document.getElementById('startScannerBtn');
+    if (startScannerBtn) {
+        startScannerBtn.addEventListener('click', async () => {
+            await restartScanner();
+        });
+    }
+}
+
 // Wait for Spotify SDK to load
 window.onSpotifyWebPlaybackSDKReady = () => {
     console.log('Spotify SDK Ready');
@@ -770,6 +820,7 @@ async function init() {
     setupViewToggle();
     setupLogout();
     setupRetryDevice();
+    setupStartScanner();
 
     // If SDK is already loaded, initialize player
     if (window.Spotify) {
