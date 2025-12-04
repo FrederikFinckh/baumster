@@ -458,7 +458,7 @@ function showQrView() {
     const qrView = document.getElementById('qrView');
     const trackInfoView = document.getElementById('trackInfoView');
 
-    if (qrView) qrView.style.display = 'flex';
+    if (qrView) qrView.style.display = '';
     if (trackInfoView) trackInfoView.style.display = 'none';
     isShowingQrCode = true;
 }
@@ -469,7 +469,7 @@ function showTrackInfoView() {
     const trackInfoView = document.getElementById('trackInfoView');
 
     if (qrView) qrView.style.display = 'none';
-    if (trackInfoView) trackInfoView.style.display = 'block';
+    if (trackInfoView) trackInfoView.style.display = '';
     isShowingQrCode = false;
 }
 
@@ -641,8 +641,14 @@ function initializeSpotifyPlayer() {
 // Update play/pause button
 function updatePlayPauseButton() {
     const playPauseBtn = document.getElementById('playPauseBtn');
+    const qrPlayPauseBtn = document.getElementById('qrPlayPauseBtn');
+    const icon = isPlaying ? '⏸' : '▶';
+
     if (playPauseBtn) {
-        playPauseBtn.textContent = isPlaying ? '⏸' : '▶';
+        playPauseBtn.textContent = icon;
+    }
+    if (qrPlayPauseBtn) {
+        qrPlayPauseBtn.textContent = icon;
     }
 }
 
@@ -667,12 +673,22 @@ function setupViewToggle() {
 // Player controls
 function setupPlayerControls() {
     const playPauseBtn = document.getElementById('playPauseBtn');
+    const qrPlayPauseBtn = document.getElementById('qrPlayPauseBtn');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const closePlayer = document.getElementById('closePlayer');
 
     if (playPauseBtn) {
         playPauseBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (spotifyPlayer) {
+                spotifyPlayer.togglePlay();
+            }
+        });
+    }
+
+    if (qrPlayPauseBtn) {
+        qrPlayPauseBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             if (spotifyPlayer) {
                 spotifyPlayer.togglePlay();

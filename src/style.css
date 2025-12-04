@@ -662,8 +662,6 @@ h1 {
 
   /* QR Code View Styles */
   .qr-view {
-    display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2rem;
@@ -683,13 +681,25 @@ h1 {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     background: white;
     padding: 10px;
+    margin-bottom: 1.5rem;
   }
 
   .qr-hint {
-    margin-top: 1rem;
+    margin-bottom: 1rem;
     font-size: 0.9rem;
     color: var(--spotify-light-gray);
     text-align: center;
+  }
+
+  /* QR View Play/Pause Button */
+  .qr-play-btn {
+    margin-top: 0;
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  .qr-play-btn:hover {
+    transform: scale(1.1);
   }
 
   /* Track Info View Styles */
