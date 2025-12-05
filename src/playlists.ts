@@ -1,6 +1,6 @@
 import './style.css';
 import { isAuthenticated, getStoredToken, logout } from './auth';
-import { PDFGenerator, convertToCardData } from './pdf-generator';
+import { PDFGenerator } from './pdf-generator';
 import { registerServiceWorker } from './pwa';
 
 if (!isAuthenticated()) {
@@ -312,9 +312,7 @@ createPdfBtn.addEventListener('click', async () => {
         createPdfBtn.disabled = true;
         createPdfBtn.textContent = 'Generating PDF...';
 
-        const cardData = convertToCardData(playlistData);
-        const generator = new PDFGenerator();
-        await generator.generatePDF(cardData);
+        await new PDFGenerator().generatePDF(playlistData);
 
         createPdfBtn.textContent = 'Create PDF';
     } catch (error) {

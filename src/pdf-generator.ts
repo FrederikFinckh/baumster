@@ -3,9 +3,9 @@ import QRCode from 'qrcode';
 
 interface CardData {
     url: string;
-    song_name: string;
+    songName: string;
     artist: string;
-    year: string;
+    releaseYear: string;
 }
 
 // A4 is 210mm x 297mm
@@ -112,11 +112,11 @@ export class PDFGenerator {
 
             this.doc.setFontSize(42);
             this.doc.setFont('helvetica', 'bold');
-            this.doc.text(card.year, centerX, centerY + 5, { align: 'center' });
+            this.doc.text(card.releaseYear, centerX, centerY + 5, { align: 'center' });
 
             this.doc.setFontSize(14);
             this.doc.setFont('helvetica', 'normal');
-            this.doc.text(card.song_name, centerX, centerY + 20, {
+            this.doc.text(card.songName, centerX, centerY + 20, {
                 align: 'center',
                 maxWidth: CARD_WIDTH - 10
             });
@@ -134,7 +134,7 @@ export class PDFGenerator {
             const col = (this.CARDS_PER_ROW - 1) - (index % this.CARDS_PER_ROW);
             const row = Math.floor(index / this.CARDS_PER_ROW);
 
-            const x = (col * CARD_WIDTH);
+            const x = PAGE_PADDING + (col * CARD_WIDTH);
             const y = PAGE_PADDING + (row * CARD_HEIGHT);
 
             const qrDataUrl = await this.generateQRCode(card.url);
@@ -164,13 +164,4 @@ export class PDFGenerator {
 
         this.doc.save('playlist-qr-cards.pdf');
     }
-}
-
-export function convertToCardData(tracks: any[]): CardData[] {
-    return tracks.map(track => ({
-        url: track.url,
-        song_name: track.songName,
-        artist: track.artist,
-        year: track.releaseYear
-    }));
 }
