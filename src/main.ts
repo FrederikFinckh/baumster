@@ -1,5 +1,6 @@
 import './style.css';
 import { redirectToAuthCodeFlow, isAuthenticated, logout } from './auth';
+import { registerServiceWorker } from './pwa';
 
 // Check if already authenticated and update UI
 const loginBtn = document.getElementById('loginBtn') as HTMLButtonElement;
@@ -49,3 +50,6 @@ if (isAuthenticated()) {
     logoutBtn.style.display = 'none';
   }
 }
+
+// Register service worker for PWA
+registerServiceWorker();

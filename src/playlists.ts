@@ -1,6 +1,7 @@
 import './style.css';
 import { isAuthenticated, getStoredToken, logout } from './auth';
 import { PDFGenerator, convertToCardData } from './pdf-generator';
+import { registerServiceWorker } from './pwa';
 
 if (!isAuthenticated()) {
     window.location.href = '/';
@@ -324,3 +325,6 @@ createPdfBtn.addEventListener('click', async () => {
         createPdfBtn.textContent = 'Create PDF';
     }
 });
+
+// Register service worker for PWA
+registerServiceWorker();

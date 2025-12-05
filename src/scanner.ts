@@ -2,6 +2,7 @@ import './style.css';
 import { isAuthenticated, getStoredToken, logout } from './auth';
 import { Html5Qrcode } from 'html5-qrcode';
 import QRCode from 'qrcode';
+import { registerServiceWorker } from './pwa';
 
 // Check if authenticated
 if (!isAuthenticated()) {
@@ -812,3 +813,6 @@ async function init() {
 
 // Start the app
 init();
+
+// Register service worker for PWA
+registerServiceWorker();

@@ -1,4 +1,5 @@
 import { getAccessToken, storeToken } from './auth';
+import { registerServiceWorker } from './pwa';
 
 async function handleCallback() {
     const params = new URLSearchParams(window.location.search);
@@ -36,3 +37,6 @@ async function handleCallback() {
 
 // Run the callback handler
 handleCallback();
+
+// Register service worker for PWA
+registerServiceWorker();

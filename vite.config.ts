@@ -14,5 +14,7 @@ export default defineConfig({
                 playlists: './playlists.html',
             },
         },
+        // Note: PWA files (manifest.json, sw.js, icons) in public/ folder
+        // are automatically copied to dist/ during build
     },
 });
