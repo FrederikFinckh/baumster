@@ -46,56 +46,26 @@ export class PDFGenerator {
         });
     }
 
-    private drawCutLines(isLastRow: boolean = false): void {
-        const { CARD_WIDTH, CARD_HEIGHT, CARDS_PER_ROW, PAGE_PADDING } = this;
+    private drawCrosses(): void {
+        [...Array(this.CARDS_PER_ROW + 1).keys()].map(col => {
+            [...Array(this.CARDS_PER_COLUMN + 1).keys()].map(row =>
+                this.drawCross(this.PAGE_PADDING + col * this.CARD_WIDTH, this.PAGE_PADDING + row * this.CARD_HEIGHT, 2))
+        })
+    }
 
-        const cornerSize = 1;
-
-        this.doc.line(PAGE_PADDING, PAGE_PADDING, PAGE_PADDING + cornerSize, PAGE_PADDING);
-        this.doc.line(PAGE_PADDING, PAGE_PADDING, PAGE_PADDING, PAGE_PADDING + cornerSize);
-
-        const rightX = PAGE_PADDING + (CARDS_PER_ROW * CARD_WIDTH);
-        this.doc.line(rightX - cornerSize, PAGE_PADDING, rightX, PAGE_PADDING);
-        this.doc.line(rightX, PAGE_PADDING, rightX, PAGE_PADDING + cornerSize);
-
-        const bottomY = PAGE_PADDING + (this.CARDS_PER_COLUMN * CARD_HEIGHT);
-        this.doc.line(PAGE_PADDING, bottomY - cornerSize, PAGE_PADDING, bottomY);
-        this.doc.line(PAGE_PADDING, bottomY, PAGE_PADDING + cornerSize, bottomY);
-
-        this.doc.line(rightX, bottomY - cornerSize, rightX, bottomY);
-        this.doc.line(rightX - cornerSize, bottomY, rightX, bottomY);
-
-        for (let i = 1; i < CARDS_PER_ROW; i++) {
-            const x = PAGE_PADDING + (i * CARD_WIDTH);
-
-            for (let row = 0; row < this.CARDS_PER_COLUMN; row++) {
-                const y = PAGE_PADDING + (row * CARD_HEIGHT);
-
-                if (row < this.CARDS_PER_COLUMN - 1 || !isLastRow) {
-                    this.doc.line(x, y, x, y + CARD_HEIGHT);
-                }
-            }
-        }
-
-        for (let i = 1; i < this.CARDS_PER_COLUMN; i++) {
-            const y = PAGE_PADDING + (i * CARD_HEIGHT);
-
-            for (let col = 0; col < CARDS_PER_ROW; col++) {
-                const x = PAGE_PADDING + (col * CARD_WIDTH);
-
-                this.doc.line(x, y, x + CARD_WIDTH, y);
-            }
-        }
+    private drawCross(x: number, y: number, diameterMm: number) {
+        this.doc.line(x - diameterMm / 2, y, x + diameterMm / 2, y);
+        this.doc.line(x, y - diameterMm / 2, x, y + diameterMm / 2);
     }
 
     private drawFrontPage(cards: CardData[]): void {
         const { CARD_WIDTH, CARD_HEIGHT, PAGE_PADDING } = this;
 
-        this.drawCutLines(cards.length < this.CARDS_PER_PAGE);
+        this.drawCrosses();
 
         cards.forEach((card, index) => {
             const col = index % this.CARDS_PER_ROW;
-            const row = Math.floor(index / this.CARDS_PER_ROW);
+            const row = Math.floor(index / (this.CARDS_PER_COLUMN - 1));
 
             const x = PAGE_PADDING + (col * CARD_WIDTH);
             const y = PAGE_PADDING + (row * CARD_HEIGHT);
@@ -123,16 +93,16 @@ export class PDFGenerator {
         });
     }
 
-    private async drawBackPage(cards: CardData[]): Promise<void> {
+    private async drawBackPage(cards: CardData[]) {
         const { CARD_WIDTH, CARD_HEIGHT, PAGE_PADDING } = this;
 
-        this.drawCutLines(cards.length < this.CARDS_PER_PAGE);
+        this.drawCrosses();
 
         for (let index = 0; index < cards.length; index++) {
-            const card = cards[cards.length - 1 - index];
+            const card = cards[index]
 
             const col = (this.CARDS_PER_ROW - 1) - (index % this.CARDS_PER_ROW);
-            const row = Math.floor(index / this.CARDS_PER_ROW);
+            const row = Math.floor(index / (this.CARDS_PER_COLUMN - 1));
 
             const x = PAGE_PADDING + (col * CARD_WIDTH);
             const y = PAGE_PADDING + (row * CARD_HEIGHT);
