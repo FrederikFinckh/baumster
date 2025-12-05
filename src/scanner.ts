@@ -744,6 +744,11 @@ function setupPlayerControls() {
         });
     }
 }
+const backBtn = document.getElementById('backBtn') as HTMLButtonElement;
+backBtn.addEventListener('click', () => {
+    window.location.href = '/';
+});
+
 
 // Setup logout button
 function setupLogout() {
