@@ -4,7 +4,7 @@
     "description": "Scan QR codes to play Spotify songs instantly",
     "start_url": "/",
     "scope": "/",
-    "display": "standalone",
+    "display": "fullscreen",
     "orientation": "portrait-primary",
     "theme_color": "#1DB954",
     "background_color": "#191414",
