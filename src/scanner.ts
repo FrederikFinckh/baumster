@@ -14,8 +14,6 @@ let spotifyPlayer: Spotify.Player | null = null;
 let deviceId: string | null = null;
 let currentTrackUri: string | null = null;
 let isPlaying = false;
-let isShowingQrCode = true;
-let currentTrackUrl: string | null = null;
 let deviceReady = false;
 
 // Spotify URL patterns
@@ -483,7 +481,6 @@ async function generateTrackQrCode(trackUri: string): Promise<string> {
     // Convert URI to URL format
     const trackId = trackUri.replace('spotify:track:', '');
     const url = `https://open.spotify.com/track/${trackId}`;
-    currentTrackUrl = url;
 
     // Generate QR code
     return await QRCode.toDataURL(url, {
@@ -500,7 +497,6 @@ function showQrView() {
 
     if (qrView) qrView.style.display = '';
     if (trackInfoView) trackInfoView.style.display = 'none';
-    isShowingQrCode = true;
 }
 
 // Show track info view
@@ -510,7 +506,6 @@ function showTrackInfoView() {
 
     if (qrView) qrView.style.display = 'none';
     if (trackInfoView) trackInfoView.style.display = '';
-    isShowingQrCode = false;
 }
 
 // Show player box
