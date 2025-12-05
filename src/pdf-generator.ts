@@ -8,11 +8,16 @@ interface CardData {
     year: string;
 }
 
+// A4 is 210mm x 297mm
+// We want a 4x3 grid with padding of about 10mm to all sides
+// hence: min(floor((210-20)/3), floor((297-20)/4) = 62 for square cards
+// therefore the margin has size (210-3*62)/2=12 (x axis is limiting factor)
+
 export class PDFGenerator {
     private doc: jsPDF;
     private readonly CARD_WIDTH = 62;
     private readonly CARD_HEIGHT = 62;
-    private readonly PAGE_PADDING = 30;
+    private readonly PAGE_PADDING = 12;
     private readonly CARDS_PER_ROW = 3;
     private readonly CARDS_PER_COLUMN = 4;
     private readonly CARDS_PER_PAGE = 12;
@@ -126,10 +131,10 @@ export class PDFGenerator {
         for (let index = 0; index < cards.length; index++) {
             const card = cards[cards.length - 1 - index];
 
-            const col = index % this.CARDS_PER_ROW;
+            const col = (this.CARDS_PER_ROW - 1) - (index % this.CARDS_PER_ROW);
             const row = Math.floor(index / this.CARDS_PER_ROW);
 
-            const x = PAGE_PADDING + (col * CARD_WIDTH);
+            const x = (col * CARD_WIDTH);
             const y = PAGE_PADDING + (row * CARD_HEIGHT);
 
             const qrDataUrl = await this.generateQRCode(card.url);
