@@ -2,26 +2,11 @@ import './style.css';
 import { isAuthenticated, getStoredToken, logout } from './auth';
 import { PDFGenerator } from './pdf-generator';
 import { registerServiceWorker } from './pwa';
+import { TableManager } from './table-manager';
+import type { TrackData } from './table-manager';
 
 if (!isAuthenticated()) {
     window.location.href = '/';
-}
-
-// Interface for track data structure
-interface TrackData {
-    number: string;
-    artist: string;
-    songName: string;
-    releaseYear: string;
-    url: string;
-}
-
-// Global variable to store editable playlist data
-let playlistData: TrackData[] = [];
-
-// Function to get current playlist data
-export function getPlaylistData(): TrackData[] {
-    return playlistData;
 }
 
 const playlistUrlInput = document.getElementById('playlistUrl') as HTMLInputElement;
@@ -34,46 +19,16 @@ const backBtn = document.getElementById('backBtn') as HTMLButtonElement;
 const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement;
 const tracksTable = document.getElementById('tracksTable') as HTMLTableElement;
 const createPdfBtn = document.getElementById('createPdfBtn') as HTMLButtonElement;
+const exportJsonBtn = document.getElementById('exportJsonBtn') as HTMLButtonElement;
 
-// Make table columns resizable
-function makeColumnsResizable() {
-    const table = tracksTable;
-    const cols = table.querySelectorAll('th');
-
-    cols.forEach((col) => {
-        const resizer = document.createElement('div');
-        resizer.className = 'column-resizer';
-        col.appendChild(resizer);
-
-        let startX: number;
-        let startWidth: number;
-
-        resizer.addEventListener('mousedown', (e: MouseEvent) => {
-            e.preventDefault();
-            startX = e.pageX;
-            startWidth = col.offsetWidth;
-
-            const mouseMoveHandler = (e: MouseEvent) => {
-                const width = startWidth + (e.pageX - startX);
-                col.style.width = `${width}px`;
-                col.style.minWidth = `${width}px`;
-            };
-
-            const mouseUpHandler = () => {
-                document.removeEventListener('mousemove', mouseMoveHandler);
-                document.removeEventListener('mouseup', mouseUpHandler);
-            };
-
-            document.addEventListener('mousemove', mouseMoveHandler);
-            document.addEventListener('mouseup', mouseUpHandler);
-        });
-    });
-}
-
-// Check if artist field contains multiple artists (has comma)
-function hasMultipleArtists(artistValue: string): boolean {
-    return artistValue.includes(',');
-}
+// Create table manager instance
+const tableManager = new TableManager({
+    tableBody: tracksTableBody,
+    table: tracksTable,
+    title: playlistName,
+    resultsContainer: playlistResults,
+    errorMessage: errorMessage
+});
 
 function extractPlaylistId(input: string): string | null {
     const trimmed = input.trim();
@@ -125,26 +80,18 @@ function extractReleaseYear(releaseDate: string): string {
 }
 
 function displayPlaylistData(data: any): void {
-    playlistName.textContent = data.name || 'Unknown Playlist';
-    tracksTableBody.innerHTML = '';
+    const playlistTitle = data.name || 'Unknown Playlist';
 
     if (!data.tracks || !data.tracks.items || data.tracks.items.length === 0) {
-        const row = tracksTableBody.insertRow();
-        const cell = row.insertCell();
-        cell.colSpan = 4;
-        cell.textContent = 'No tracks found in this playlist.';
-        cell.style.textAlign = 'center';
+        tableManager.showError('No tracks found in this playlist.');
         return;
     }
 
-    // Reset and populate the playlistData array
-    playlistData = [];
-
+    // Extract track data
+    const trackData: TrackData[] = [];
     data.tracks.items.forEach((item: any, index: number) => {
         const track = item.track;
         if (!track) return;
-
-        const row = tracksTableBody.insertRow();
 
         // Extract initial values
         const number = (index + 1).toString();
@@ -153,102 +100,21 @@ function displayPlaylistData(data: any): void {
         const releaseYear = extractReleaseYear(track.album?.release_date);
         const trackUrl = `https://open.spotify.com/track/${track.id}`;
 
-        // Add to playlistData array
-        playlistData.push({
+        trackData.push({
             number,
             artist: artists,
             songName,
             releaseYear,
             url: trackUrl
         });
-
-        // Create editable input fields for each cell
-
-        // Number cell - editable
-        const numberCell = row.insertCell();
-        const numberInput = document.createElement('input');
-        numberInput.type = 'text';
-        numberInput.value = number;
-        numberInput.className = 'editable-cell';
-        numberInput.dataset.index = index.toString();
-        numberInput.dataset.field = 'number';
-        numberInput.addEventListener('input', (e) => {
-            const target = e.target as HTMLInputElement;
-            const idx = parseInt(target.dataset.index || '0');
-            playlistData[idx].number = target.value;
-        });
-        numberCell.appendChild(numberInput);
-
-        // Artist cell - editable with multi-artist highlighting
-        const artistCell = row.insertCell();
-        const artistInput = document.createElement('input');
-        artistInput.type = 'text';
-        artistInput.value = artists;
-        artistInput.className = 'editable-cell';
-        artistInput.dataset.index = index.toString();
-        artistInput.dataset.field = 'artist';
-
-        // Highlight if multiple artists
-        if (hasMultipleArtists(artists)) {
-            artistInput.classList.add('multi-artist');
-        }
-
-        artistInput.addEventListener('input', (e) => {
-            const target = e.target as HTMLInputElement;
-            const idx = parseInt(target.dataset.index || '0');
-            playlistData[idx].artist = target.value;
-
-            // Update highlight based on whether there are multiple artists
-            if (hasMultipleArtists(target.value)) {
-                target.classList.add('multi-artist');
-            } else {
-                target.classList.remove('multi-artist');
-            }
-        });
-        artistCell.appendChild(artistInput);
-
-        // Song Name cell - editable
-        const nameCell = row.insertCell();
-        const nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.value = songName;
-        nameInput.className = 'editable-cell';
-        nameInput.dataset.index = index.toString();
-        nameInput.dataset.field = 'songName';
-        nameInput.addEventListener('input', (e) => {
-            const target = e.target as HTMLInputElement;
-            const idx = parseInt(target.dataset.index || '0');
-            playlistData[idx].songName = target.value;
-        });
-        nameCell.appendChild(nameInput);
-
-        // Release Year cell - editable
-        const yearCell = row.insertCell();
-        const yearInput = document.createElement('input');
-        yearInput.type = 'text';
-        yearInput.value = releaseYear;
-        yearInput.className = 'editable-cell';
-        yearInput.dataset.index = index.toString();
-        yearInput.dataset.field = 'releaseYear';
-        yearInput.addEventListener('input', (e) => {
-            const target = e.target as HTMLInputElement;
-            const idx = parseInt(target.dataset.index || '0');
-            playlistData[idx].releaseYear = target.value;
-        });
-        yearCell.appendChild(yearInput);
     });
 
-    playlistResults.style.display = 'block';
-    errorMessage.style.display = 'none';
-
-    // Make columns resizable after table is rendered
-    makeColumnsResizable();
+    // Display data using table manager
+    tableManager.displayData(trackData, playlistTitle);
 }
 
 function showError(message: string): void {
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-    playlistResults.style.display = 'none';
+    tableManager.showError(message);
 }
 
 loadPlaylistBtn.addEventListener('click', async () => {
@@ -312,7 +178,7 @@ createPdfBtn.addEventListener('click', async () => {
         createPdfBtn.disabled = true;
         createPdfBtn.textContent = 'Generating PDF...';
 
-        await new PDFGenerator().generatePDF(playlistData);
+        await new PDFGenerator().generatePDF(tableManager.getPlaylistData());
 
         createPdfBtn.textContent = 'Create PDF';
     } catch (error) {
@@ -321,6 +187,45 @@ createPdfBtn.addEventListener('click', async () => {
     } finally {
         createPdfBtn.disabled = false;
         createPdfBtn.textContent = 'Create PDF';
+    }
+});
+
+exportJsonBtn.addEventListener('click', () => {
+    try {
+        exportJsonBtn.disabled = true;
+        exportJsonBtn.textContent = 'Exporting...';
+
+        // Get the current playlist data
+        const data = tableManager.getPlaylistData();
+        const playlistTitle = playlistName.textContent || 'playlist';
+
+        // Create a sanitized filename
+        const fileName = `${playlistTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_tracks.json`;
+
+        // Convert data to JSON string
+        const jsonData = JSON.stringify(data, null, 2);
+
+        // Create blob and download
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+
+        // Clean up
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        exportJsonBtn.textContent = 'Export JSON';
+    } catch (error) {
+        console.error('JSON export failed:', error);
+        alert('Failed to export JSON. Please try again.');
+        exportJsonBtn.textContent = 'Export JSON';
+    } finally {
+        exportJsonBtn.disabled = false;
     }
 });
 

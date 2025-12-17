@@ -284,6 +284,34 @@ h1 {
   border-color: #1DB954;
 }
 
+/* JSON input styles */
+.json-input-section {
+  margin: 2rem 0;
+}
+
+.json-input-section label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.json-input {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  box-sizing: border-box;
+  min-height: 150px;
+  font-family: monospace;
+}
+
+.json-input:focus {
+  outline: none;
+  border-color: #1DB954;
+}
+
 .error-message {
   background-color: #f8d7da;
   color: #721c24;
@@ -313,10 +341,22 @@ h1 {
   font-weight: 600;
 }
 
+#tracksTable th:first-child {
+  width: 50px;
+  /* Minimal width for number column */
+  text-align: center;
+}
+
 #tracksTable td {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #eee;
   color: #333;
+}
+
+#tracksTable td:first-child {
+  width: 50px;
+  /* Minimal width for number column */
+  text-align: center;
 }
 
 #tracksTable tbody tr:hover {
@@ -412,10 +452,11 @@ h1 {
   margin: 1.5rem 0;
   display: flex;
   justify-content: center;
+  gap: 1rem;
 }
 
 .pdf-action-section .btn-primary {
-  min-width: 200px;
+  min-width: 150px;
 }
 
 /* Scanner page styles */
@@ -752,5 +793,290 @@ h1 {
 
   .qr-view {
     padding: 1.5rem;
+  }
+}
+
+/* Card Preview Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.card-preview-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .card-preview-modal {
+  transform: scale(1);
+}
+
+.card-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.card-preview {
+  position: relative;
+  width: 62mm;
+  height: 62mm;
+  background: white;
+  border: 2px solid #333;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  overflow: hidden;
+}
+
+/* Cross marks for cutting reference */
+.card-preview::before,
+.card-preview::after {
+  content: '';
+  position: absolute;
+  background: #333;
+}
+
+.card-preview::before {
+  width: 20px;
+  height: 2px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.card-preview::after {
+  width: 2px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Card display elements styling to match PDF */
+.card-artist-display {
+  font-size: 14pt;
+  font-weight: normal;
+  text-align: center;
+  position: absolute;
+  top: 14mm;
+  transform: translateY(-50%);
+  max-width: calc(100%-10mm);
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  word-wrap: break-word;
+  color: #000000;
+  /* Black text for visibility */
+}
+
+.card-year-display {
+  font-size: 42pt;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  color: #000000;
+  /* Black text for visibility */
+  position: absolute;
+  top: 31mm;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.card-song-display {
+  font-size: 14pt;
+  font-weight: normal;
+  text-align: center;
+  position: absolute;
+  top: 46mm;
+  transform: translateY(-50%);
+  max-width: calc(100%-10mm);
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  word-wrap: break-word;
+  color: #000000;
+  /* Black text for visibility */
+}
+
+/* Card input elements styling */
+.card-artist-input {
+  font-size: 14px;
+  font-weight: normal;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  width: 80%;
+  margin-bottom: 15px;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  resize: vertical;
+  min-height: 40px;
+  color: #000000;
+  /* Black text for visibility */
+  background-color: #ffffff;
+  /* White background */
+}
+
+.card-year-input {
+  font-size: 42px;
+  font-weight: bold;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+  width: 60%;
+  margin-bottom: 15px;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  color: #000000;
+  /* Black text for visibility */
+  background-color: #ffffff;
+  /* White background */
+  position: relative;
+  z-index: 1;
+  line-height: 1.2;
+  /* Adjust line height to control spacing */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  /* Ensure minimum height for visibility */
+  box-sizing: border-box;
+  overflow: visible;
+  /* Allow overflow to be visible to show overlapping */
+}
+
+.card-song-input {
+  font-size: 14px;
+  font-weight: normal;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  width: 80%;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  resize: vertical;
+  min-height: 40px;
+  color: #000000;
+  /* Black text for visibility */
+  background-color: #ffffff;
+  /* White background */
+}
+
+
+.card-preview-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.close-modal-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-modal-btn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.btn-edit,
+.btn-close {
+  background: var(--spotify-green);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 500px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-edit:hover,
+.btn-close:hover {
+  background: #1ed760;
+  transform: scale(1.05);
+}
+
+.btn-close {
+  background: #666;
+}
+
+.btn-close:hover {
+  background: #777;
+}
+
+/* Responsive design for modal */
+@media (max-width: 768px) {
+  .card-preview-modal {
+    padding: 20px;
+    margin: 20px;
+  }
+
+  .card-preview {
+    width: 250px;
+    height: 250px;
+  }
+
+  .card-artist-input {
+    font-size: 16px;
+    width: 85%;
+  }
+
+  .card-year-input {
+    font-size: 36px;
+    width: 70%;
+    line-height: 1.2;
+    min-height: 50px;
+  }
+
+  .card-song-input {
+    font-size: 16px;
+    width: 85%;
+  }
+
+  .card-song-input {
+    font-size: 16px;
+    width: 85%;
   }
 }

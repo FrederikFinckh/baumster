@@ -4,6 +4,7 @@ import { registerServiceWorker } from './pwa';
 
 // Check if already authenticated and update UI
 const loginBtn = document.getElementById('loginBtn') as HTMLButtonElement;
+const importJsonBtn = document.getElementById('importJsonBtn') as HTMLButtonElement;
 const playlistsBtn = document.getElementById('playlistsBtn') as HTMLButtonElement;
 const logoutBtn = document.getElementById('logoutBtn') as HTMLButtonElement;
 
@@ -15,7 +16,7 @@ if (isAuthenticated()) {
       window.location.href = '/scanner.html';
     });
   }
-  
+
   // Show playlists button
   if (playlistsBtn) {
     playlistsBtn.style.display = 'block';
@@ -23,7 +24,7 @@ if (isAuthenticated()) {
       window.location.href = '/playlists.html';
     });
   }
-  
+
   // Show logout button
   if (logoutBtn) {
     logoutBtn.style.display = 'block';
@@ -39,16 +40,23 @@ if (isAuthenticated()) {
       redirectToAuthCodeFlow();
     });
   }
-  
+
   // Hide playlists button
   if (playlistsBtn) {
     playlistsBtn.style.display = 'none';
   }
-  
+
   // Hide logout button
   if (logoutBtn) {
     logoutBtn.style.display = 'none';
   }
+}
+
+// Add event listener for import JSON button
+if (importJsonBtn) {
+  importJsonBtn.addEventListener('click', () => {
+    window.location.href = '/import-json.html';
+  });
 }
 
 // Register service worker for PWA

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#1DB954">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+  <!-- Apple Touch Icon -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Baumster">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <title>Baumster - Import JSON</title>
+</head>
+
+<body>
+  <div id="app">
+    <div class="container">
+      <h1><img src='/icon-192x192.png' /></h1>
+      <h1> Baumster</h1>
+      <h2>Import JSON Data</h2>
+
+      <div class="json-input-section">
+        <label for="jsonInput">Paste your JSON data here:</label>
+        <textarea id="jsonInput"
+          placeholder='[{"number": "1", "artist": "Artist Name", "songName": "Song Title", "releaseYear": "2023", "url": "https://open.spotify.com/track/..."}]'
+          class="json-input"></textarea>
+        <button id="loadJsonBtn" class="btn-primary">Load JSON</button>
+      </div>
+
+      <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+      <div id="jsonResults" style="display: none;">
+        <h3 id="jsonTitle">Imported Data</h3>
+
+        <div class="pdf-action-section">
+          <button id="createPdfBtn" class="btn-primary">Create PDF</button>
+        </div>
+
+        <div class="table-container">
+          <table id="tracksTable">
+            <thead>
+              <tr>
+                <th>Number</th>
+                <th>Artist</th>
+                <th>Song Name</th>
+                <th>Release Year</th>
+              </tr>
+            </thead>
+            <tbody id="tracksTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="navigation">
+        <button id="backBtn" class="btn-secondary">Back to Home</button>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/import-json.ts"></script>
+</body>
+
+</html>
