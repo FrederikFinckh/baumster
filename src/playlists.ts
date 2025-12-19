@@ -50,9 +50,19 @@ function extractPlaylistId(input: string): string | null {
     return null;
 }
 
-async function fetchPlaylistData(playlistId: string, accessToken: string): Promise<any> {
+async function fetchPlaylist(playlistId: string, accessToken: string): Promise<TrackData[]> {
+    let chunkData = await fetchChunk(`https://api.spotify.com/v1/playlists/${playlistId}/tracks?fields=next,items(track(id,name,artists(name),external_urls(spotify),album(release_date))&limit=50&offset=0`, accessToken);
+    let tracks: TrackData[] = parseChunk(chunkData)
+    while (chunkData.next) {
+        chunkData = await fetchChunk(chunkData.next, accessToken);
+        tracks = [...tracks, ...parseChunk(chunkData)];
+    }
+    return tracks
+}
+
+async function fetchChunk(url: string, accessToken: string): Promise<any> {
     const response = await fetch(
-        `https://api.spotify.com/v1/playlists/${playlistId}?fields=name,tracks.items(track(id,name,artists(name),album(name,release_date)))`,
+        url,
         {
             headers: {
                 'Authorization': `Bearer ${accessToken}`
@@ -66,51 +76,32 @@ async function fetchPlaylistData(playlistId: string, accessToken: string): Promi
         } else if (response.status === 401) {
             throw new Error('Authentication expired. Please log in again.');
         } else {
-            throw new Error(`Failed to fetch playlist: ${response.statusText}`);
+            throw new Error(`Failed to fetch playlist: ${response.status} - ${response.statusText}`);
         }
     }
-
     return await response.json();
 }
 
-function extractReleaseYear(releaseDate: string): string {
-    if (!releaseDate) return 'Unknown';
-    const year = releaseDate.split('-')[0];
-    return year;
+
+function parseChunk(data: any): TrackData[] {
+    return data.items.map((i: any) => ({
+        artist: i.track.artists.map((a: any) => a.name).join(","),
+        songName: i.track.name,
+        releaseYear: i.track.album.release_date.split('-')[0],
+        url: i.track.external_urls.spotify
+    }))
 }
 
-function displayPlaylistData(data: any): void {
-    const playlistTitle = data.name || 'Unknown Playlist';
+function displayPlaylistData(data: TrackData[]): void {
+    const playlistTitle = ''; // todo remove or get metainfo
 
-    if (!data.tracks || !data.tracks.items || data.tracks.items.length === 0) {
+    if (!data?.length) {
         tableManager.showError('No tracks found in this playlist.');
         return;
     }
 
-    // Extract track data
-    const trackData: TrackData[] = [];
-    data.tracks.items.forEach((item: any, index: number) => {
-        const track = item.track;
-        if (!track) return;
-
-        // Extract initial values
-        const number = (index + 1).toString();
-        const artists = track.artists?.map((artist: any) => artist.name).join(', ') || 'Unknown Artist';
-        const songName = track.name || 'Unknown Track';
-        const releaseYear = extractReleaseYear(track.album?.release_date);
-        const trackUrl = `https://open.spotify.com/track/${track.id}`;
-
-        trackData.push({
-            number,
-            artist: artists,
-            songName,
-            releaseYear,
-            url: trackUrl
-        });
-    });
-
     // Display data using table manager
-    tableManager.displayData(trackData, playlistTitle);
+    tableManager.displayData(data, playlistTitle);
 }
 
 function showError(message: string): void {
@@ -144,8 +135,8 @@ loadPlaylistBtn.addEventListener('click', async () => {
         loadPlaylistBtn.disabled = true;
         loadPlaylistBtn.textContent = 'Loading...';
 
-        const data = await fetchPlaylistData(playlistId, accessToken);
-        displayPlaylistData(data);
+        const playlistData = await fetchPlaylist(playlistId, accessToken);
+        displayPlaylistData(playlistData);
     } catch (error) {
         if (error instanceof Error) {
             showError(error.message);

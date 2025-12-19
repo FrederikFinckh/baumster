@@ -1,6 +1,5 @@
 // Interface for track data structure
 export interface TrackData {
-  number: string;
   artist: string;
   songName: string;
   releaseYear: string;
@@ -115,7 +114,7 @@ export class TableManager {
 
       // Create non-editable display cells
       const numberCell = row.insertCell();
-      numberCell.textContent = track.number;
+      numberCell.textContent = `${index + 1}`;
       numberCell.className = 'table-cell';
       numberCell.style.width = '50px'; // Minimal width for up to 3 digits
       numberCell.style.textAlign = 'center';
